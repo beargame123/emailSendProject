@@ -1,6 +1,7 @@
 package com.example.emailsendproject.service;
 
 import com.example.emailsendproject.dto.MailDto;
+import com.example.emailsendproject.handler.MailHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -15,10 +16,17 @@ public class MailService {
     private JavaMailSender javaMailSender;
 
     public void mailSend(MailDto mailDto){
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(mailDto.getAddress()); //보내는 사람 주소
-        message.setSubject(mailDto.getTitle()); // 제목
-        message.setText(mailDto.getMessage()); // 내용
-        javaMailSender.send(message); //메일 발송
+        try {
+            MailHandler mailHandler = new MailHandler(javaMailSender);
+            mailHandler.setTo(mailDto.getAddress());
+            mailHandler.setSubject(mailDto.getTitle());
+            String htmlContent = "<h1>" + mailDto.getMessage() + "<h1>";
+            mailHandler.setText(htmlContent, true);
+            //mailHandler.setAttach(mailDto.getFile().getOriginalFilename(), mailDto.getFile());
+            mailHandler.setInline("sample-img", mailDto.getFile());
+            mailHandler.send();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
